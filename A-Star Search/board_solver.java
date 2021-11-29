@@ -192,6 +192,7 @@ import java.util.*;
             Node curr = pq.remove();
             Pair p = get_blank_position(curr.board);
 
+
             int x,y;
             for(int i=0; i<4 ; i++){
                 x = p.get_x() + dx[i];
@@ -210,14 +211,14 @@ import java.util.*;
                 pq.add(node_child_board);
 
                 if(child_board.equals(final_board)){
-                    System.out.print("Node Expanded : " + node_expanded);
-                    System.out.print("Node Explored : " + node_explored);
+                    System.out.print("Node Expanded : " + node_expanded + "\n");
+                    System.out.println("Node Explored : " + node_explored);
                     return node_child_board;
                 }
             }
             visited.add(curr.board);
         }
-        System.out.println("But No Solution Found!");
+        System.out.println("No Solution Found!!!");
         return null;
 
     }

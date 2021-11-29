@@ -26,6 +26,7 @@ public class Board{
                 data[i][j] = val++;
             }
         }
+        data[n][n] = 0;
         return new Board(data , n);
     }
 
@@ -81,6 +82,40 @@ public class Board{
             }
             System.out.println("");
         }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Board other = (Board)obj;
+        for(int i=1;i<=this.size;i++)
+        {
+            for(int j=1;j<=this.size;j++)
+            {
+                if((other.matrix[i][j] - this.matrix[i][j])!=0)
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int deep=Arrays.deepHashCode(this.matrix);
+        return Math.abs(deep);
+        //return deep;
     }
 
 

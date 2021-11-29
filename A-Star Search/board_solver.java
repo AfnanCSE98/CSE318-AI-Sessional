@@ -17,83 +17,21 @@ import java.util.*;
     HashSet<Board>visited;
     PriorityQueue<Node> pq;
     int h_id;
+    heuristics h;
     final int list_size = 100000;
 
     public board_solver(int [][] matrix,int n){
         open_list = new Hashtable<>(list_size);
         close_list = new Hashtable<>(list_size);
         pq = new PriorityQueue<>(list_size , new NodeComparator());
+        h = new heuristics();
         board_size = n;
         initial_board = new Board(matrix , n);
         final_board = Board.get_final_state(n);
         visited = new HashSet<Board>();
     }
 
-    public int hamming_distance(Board b){
-        int cnt = 0;
-        for(int i=1; i<=b.size ; i++){
-            for(int j=1 ; j<=b.size ; j++){
-                if(b.matrix[i][j]==0)continue;
-
-                Pair p = get_correct_position(b.matrix[i][j]);
-
-                if(p.get_x()!= i || p.get_y()!=j)cnt++;
-            }
-        }
-        return cnt;
-    }
-
-    public int manhattan_distance(Board b){
-        int cnt = 0;
-        for(int i=1; i<=b.size ; i++){
-            for(int j=1 ; j<=b.size ; j++){
-                if(b.matrix[i][j]==0)continue;
-
-                Pair p = get_correct_position(b.matrix[i][j]);
-
-                cnt=cnt+(Math.abs(p.get_x()-i)+Math.abs(p.get_y()-j));
-            }
-        }
-        return cnt;
-    }
-
-    public int linear_conflicts(Board b) {
-        int md = manhattan_distance(b);
-        int cnt = 0;
-
-        for(int i=1 ; i<=b.size ; i++){
-            for(int j=1 ; j<=b.size ; j++){
-                if(b.matrix[i][j]==0)continue;
-
-                Pair p = get_correct_position(b.matrix[i][j]);
-
-                if(p.get_x()==i){
-                    for(int k = j+1 ; k<=b.size ; k++){
-                        if(b.matrix[i][k]==0)continue;
-
-                        Pair pk = get_correct_position(b.matrix[i][k]);
-
-                        if(pk.get_x()==p.get_x() && pk.get_y()<p.get_y()){
-                            cnt++;
-                        }
-                    }
-                }
-                if(p.get_y()==j){
-                    for(int k = i+1 ; k<=b.size ; k++){
-                        if(b.matrix[k][j]==0)continue;
-
-                        Pair pk = get_correct_position(b.matrix[k][j]);
-
-                        if(pk.get_x() < p.get_x() && pk.get_y() == p.get_y()){
-                            cnt++;
-                        }
-                    }
-                }
-            }
-        }
-        return md+2*cnt;
-    }
-
+    
     public Pair get_blank_position(Board b){
         Pair p = null;
         for(int i=1;i<=b.size;i++){
@@ -110,28 +48,16 @@ import java.util.*;
         h_id = i;
     }
 
-    public Pair get_correct_position(int val){
-        Integer x,y;
-        if (val % board_size != 0) {
-            x = 1 + val / board_size;
-            y = val % board_size;
-        } else {
-            x = val / board_size;
-            y = board_size;
-        }
-        return new Pair(x, y);
-        
-    }
-
+    
     public int heuristic_value(Board b){
         if(h_id==1){
-            return hamming_distance(b);
+            return h.hamming_distance(b);
         }
         else if(h_id==2){
-            return manhattan_distance(b);
+            return h.manhattan_distance(b);
         }
         else{
-            return linear_conflicts(b);
+            return h.linear_conflicts(b);
         }
     }
 

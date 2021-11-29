@@ -10,6 +10,7 @@ import java.io.*;
  public class a_star{
       public static void main(String[] args){
           Scanner in = null;
+          
           try {
             File file = new File("input.txt");
             in = new Scanner(file);
@@ -17,6 +18,7 @@ import java.io.*;
           } catch (Exception e) {
               //TODO: handle exception
           }
+          
           System.out.println("Enter Grid Size");
           
           
@@ -49,11 +51,12 @@ import java.io.*;
                   //bs.print_path(goal);
               }
           }
-      }
+          
+      
       
 
       //for lightoz test cases
-      /*
+       /*
       int n = in.nextInt();
       int [][]mat  = new int[4][4];
       int tc=0;
@@ -78,5 +81,5 @@ import java.io.*;
         n--;  
       }
       */
-    
+    }  
  }

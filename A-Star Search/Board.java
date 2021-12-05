@@ -73,7 +73,7 @@ public class Board{
                 if(matrix[i][j]==0)
                 {
                     
-                    System.out.print("   ");
+                    System.out.print("*  ");
                 }
                 else
                 {
@@ -101,7 +101,7 @@ public class Board{
         {
             for(int j=1;j<=this.size;j++)
             {
-                if((other.matrix[i][j] - this.matrix[i][j])!=0)
+                if( other.matrix[i][j] != this.matrix[i][j] )
                 {
                     return false;
                 }
@@ -113,9 +113,8 @@ public class Board{
     @Override
     public int hashCode()
     {
-        int deep=Arrays.deepHashCode(this.matrix);
-        return Math.abs(deep);
-        //return deep;
+        int val=Arrays.deepHashCode(this.matrix);
+        return Math.abs(val);
     }
 
 

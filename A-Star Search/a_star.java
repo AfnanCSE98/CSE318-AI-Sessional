@@ -12,8 +12,8 @@ import java.io.*;
           Scanner in = null;
           
           try {
-            File file = new File("input.txt");
-            in = new Scanner(file);
+            //File file = new File("input.txt");
+            in = new Scanner(System.in);
               
           } catch (Exception e) {
               //TODO: handle exception
@@ -28,8 +28,22 @@ import java.io.*;
           
           for (int i = 1; i <= k; i++) {
             for (int j = 1; j <= k; j++) {
-                mat[i][j] = in.nextInt();
+                String c = in.next();
+                try {
+                    if(c.equalsIgnoreCase("*"))mat[i][j]=0;
+                    else mat[i][j]=Integer.parseInt(c);  
+                    
+                } catch (Exception e) {
+                    //TODO: handle exception
+                }
+                //mat[i][j]=in.nextInt();
             }
+          }
+          for (int i = 1; i <= k; i++) {
+            for (int j = 1; j <= k; j++) {
+                System.out.print(mat[i][j]);
+            }
+            System.out.println("");
           }
 
           for(int i=3 ; i>=1 ; i--){
@@ -48,7 +62,7 @@ import java.io.*;
               Node goal = bs.solve();
               if(goal != null){
                   System.out.println("Cost : " + goal.f_cost);
-                  //bs.print_path(goal);
+                  bs.print_path(goal);
               }
           }
           

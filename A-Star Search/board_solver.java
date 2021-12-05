@@ -127,7 +127,7 @@ import java.util.*;
                 if(x<1 || x>board_size || y<1 || y>board_size)continue;
 
                 Board child_board = curr.board.move_blank(p.get_x(), p.get_y(), x, y);
-                node_explored++;
+
 
                 if(visited.contains(child_board))continue;
 
@@ -135,6 +135,7 @@ import java.util.*;
                 Node node_child_board = new Node(child_board , curr.g_cost+1 , child_heuristic);
                 node_child_board.parent = curr;
                 pq.add(node_child_board);
+                node_explored++;
 
                 if(child_board.equals(final_board)){
                     System.out.print("Node Expanded : " + node_expanded + "\n");

@@ -11,7 +11,7 @@ public class board implements Cloneable,MinimaxProblem{
 	int stonesMoved = 0; // Stones moved on last move.
 	//private static final boolean DEBUG = false;
 	int depth;
-	
+	final boolean DEBUG = false;
 	final int STORAGE = 0;//ara[i][0] ponits to the storage
     final int bins = 6;//// Bin 0 is the mancala; other bins are numbered 1 through max number.
     final int stones_per_bin = 4;
@@ -19,7 +19,7 @@ public class board implements Cloneable,MinimaxProblem{
     
 	
     public board(Heuristic h0 , Heuristic h1 , int depth){
-        int totalStones = bins * stones_per_bin * 2;
+        totalStones = bins * stones_per_bin * 2;
         ara = new int[2][bins + 1];
         for (int i = 0; i <= 1; i++) {
 			for (int j = 1; j <= bins; j++) { 
@@ -85,6 +85,16 @@ public class board implements Cloneable,MinimaxProblem{
     public boolean is_game_over(){
         return no_stones_in_both_sides();
     }
+
+	public int countTotalStones() {
+		int result = 0;
+		for (int i = 0; i <= 1; i++) {
+			for (int j = 0; j <= bins; j++) {
+				result = result + ara[i][j];
+			}
+		}
+		return result;
+	}
 
 	private void stealBin(int player_idx , int bin ) {
 		int oppositeBin = bins + 1 - bin;
@@ -246,4 +256,72 @@ public class board implements Cloneable,MinimaxProblem{
 	}
 
 
+
+	public String toString(){
+		// Return a string-based representation of this game.
+		return edgeLine() + player0Line() + middleLine() + player1Line() + edgeLine()
+				       + (DEBUG ? (countTotalStones() + " stones.\n") : "")
+				;
+	}
+	
+	public String edgeLine() {
+		return "+----" + middleDashes() + "----+\n";
+	}
+	
+	public String player0Line() {
+		StringBuilder sb = new StringBuilder();
+		sb.append( "|    |" );
+		for (int i = 1; i <= bins; i++) {
+			sb.append( " " ).append( numberString( get_bin( 0 , i ) ) ).append( " |" );
+		}
+		sb.append( "    |\n" );
+		return sb.toString();
+	}
+	
+	public String middleLine() {
+		return "| " + numberString( get_bin( 0 , 0 ) ) + " "
+				       + middleDashes()
+				       + " " + numberString( get_bin( 1 , 0 ) ) + " |\n";
+	}
+	
+	public String player1Line() {
+		StringBuilder sb = new StringBuilder();
+		sb.append( "|    |" );
+		for (int i = bins; i > 0; i--) {
+			sb.append( " " ).append( numberString( get_bin( 1 , i ) ) ).append( " |" );
+		}
+		sb.append( "    |\n" );
+		return sb.toString();
+	}
+	
+	public String middleDashes() {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 1; i <= bins; i++) {
+			sb.append( "+----" );
+		}
+		sb.append( "+" );
+		return sb.toString();
+	}
+	
+	public String numberString( int n ) {
+		// Return a two character string with an integer.
+		// Assumes input is in range [0..99].
+		if ((0 <= n) && (n < 10)) {
+			return " " + n;
+		} else {
+			return Integer.toString( n );
+		}
+	}
+	
+	public static void printBoardConfiguration(){
+		board bd = new board(null , null , 0 );
+		for (int p = 0; p <=1 ; p++) {
+			for (int bin = 0; bin <= 6; ++bin){
+				bd.ara[p][bin] = bin;
+			}
+		}
+		System.out.println( "Board index Configuration: " );
+		System.out.println( " ----- Player 0 ----- " );
+		System.out.println( bd + " ----- Player 1 ----- " + "\n\n" );
+	}
 }

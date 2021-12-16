@@ -3,12 +3,12 @@
 import java.util.ArrayList;
 
 /// any minimax problem has to implement this interface properly to use Minimax algorithm class
-public interface MinimaxProblem {
+public interface GameTreeNode {
 	// heuristic value to be returned
 	double heuristicValue();
 	
 	// list of successors to be generated & returned maxPlayer / minPlayer also to be managed here
-	ArrayList< MinimaxProblem > successors();
+	ArrayList< GameTreeNode > successors();
 	
 	// returns true for leaf nodes
 	boolean isTerminal();
@@ -17,5 +17,5 @@ public interface MinimaxProblem {
 	boolean isMaximizing();
 	
 	// compare two objects to check whether they are same or not
-	boolean equals( MinimaxProblem o );
+	boolean equals( GameTreeNode o );
 }

@@ -1,72 +1,51 @@
 import java.util.ArrayList;
 
 public class Minimax {
+
+	static final double INF = 10000000;
 	
-	private static final boolean DEBUG = false;
-	private static final double INF = 10000000;
 	
-	private static class Solution {
-		MinimaxProblem instance;
-		double v;
-		
-		Solution( MinimaxProblem instance , double v ) {
-			this.instance = instance;
-			this.v = v;
+	//returns the optimal next bin idx
+	public static int minimax( GameTreeNode root , int depth ) {
+		OptimalNode opt = alphabeta( root , -INF , INF , true , depth );
+		ArrayList< GameTreeNode > list = root.successors();
+		int sz = list.size();
+		for (int i=0 ; i<sz ; i++){
+			if(list.get( i ) == null)continue;
+			if(list.get( i ).equals( opt.node))return i;
 		}
-		
-		static Solution max( Solution sol1 , Solution sol2 ) {
-			if (sol2 == null || (sol1 != null && sol1.v >= sol2.v)) return sol1;
-			else return sol2;
-		}
-		
-		static Solution min( Solution sol1 , Solution sol2 ) {
-			if (sol2 == null || (sol1 != null && sol1.v <= sol2.v)) return sol1;
-			else return sol2;
-		}
-	}
-	
-	public static int minimax( MinimaxProblem root , int maxDepth ) {
-		Solution opt = alphabeta( root , -INF , INF , true , maxDepth );
-		ArrayList< MinimaxProblem > list = root.successors();
-		if (DEBUG) System.err.println( "Optimum v: " + opt.v + "\n" + opt.instance );
-		for (int i = 0; i < list.size(); ++i) {
-			if (list.get( i ) != null && list.get( i ).equals( opt.instance )) return i;
-		}
-//		for (MinimaxProblem suc : root.successors()) {
-//			if (suc != null && suc.equals( opt.instance )) return suc;
-//		}
 		return -1;
 	}
 	
 	
-	private static Solution alphabeta( MinimaxProblem state , double alpha , double beta , boolean isMaximizing , int maxdepth ) {
-		if (state.isTerminal() || maxdepth == 0) {
-			if (DEBUG && state.isTerminal())
-				System.err.println( (state.isMaximizing() ? "max @" : "min @") + (maxdepth) + " current v: " + state.heuristicValue() + "\n" + state );
-			return new Solution( state , state.heuristicValue() );
+	public static OptimalNode alphabeta(GameTreeNode state , double alpha , double beta , boolean isMaximizing , int maxdepth ) {
+		if (state.isTerminal() || maxdepth == 0){
+			double h_val = state.heuristicValue();
+			return new OptimalNode(state , h_val);
 		}
 		if (isMaximizing) {
-			Solution maxSolution = new Solution( null , -INF );
-			for (MinimaxProblem s : state.successors()) {
+			OptimalNode maxNode = new OptimalNode( null , -INF );
+			for (GameTreeNode s : state.successors()){
 				if (s == null) continue;
-				Solution solution = new Solution( s , alphabeta( s , alpha , beta , s.isMaximizing() , maxdepth - 1 ).v );
-				maxSolution = Solution.max( maxSolution , solution );
-				alpha = Math.max( alpha , maxSolution.v );
-				if (alpha >= beta) break; //beta-cut-off
+				OptimalNode tmp_node = new OptimalNode(s , alphabeta(s , alpha , beta , s.isMaximizing() , maxdepth - 1 ).heuristic_value );
+				maxNode = OptimalNode.max(maxNode , tmp_node);
+				alpha = Math.max( alpha , maxNode.heuristic_value );
+				if (alpha >= beta) break; //pruning
 			}
-			return maxSolution;
+			return maxNode;
 			
-		} else {
-			Solution minSolution = new Solution( null , INF );
+		}
+		else{
+			OptimalNode minNode = new OptimalNode( null , INF );
 			
-			for (MinimaxProblem s : state.successors()) {
+			for (GameTreeNode s : state.successors()) {
 				if (s == null) continue;
-				Solution solution = new Solution( s , alphabeta( s , alpha , beta , s.isMaximizing() , maxdepth - 1 ).v );
-				minSolution = Solution.min( minSolution , solution );
-				beta = Math.min( beta , minSolution.v );
-				if (alpha >= beta) break; //alpha-cut-off
+				OptimalNode tmp_node = new OptimalNode( s , alphabeta( s , alpha , beta , s.isMaximizing() , maxdepth - 1 ).heuristic_value);
+				minNode = OptimalNode.min(minNode , tmp_node);
+				beta = Math.min( beta , minNode.heuristic_value);
+				if (alpha >= beta) break; //pruning
 			}
-			return minSolution;
+			return minNode;
 		}
 	}
 	

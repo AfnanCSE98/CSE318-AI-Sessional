@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class board implements Cloneable,MinimaxProblem{
+public class board implements Cloneable,GameTreeNode{
 
     int[][] ara;
 	
@@ -9,7 +9,6 @@ public class board implements Cloneable,MinimaxProblem{
 	int maxPlayer;
 	Heuristic[] heuristics; // An array with two elements = the two players' heuristics.
 	int stonesMoved = 0; // Stones moved on last move.
-	//private static final boolean DEBUG = false;
 	int depth;
 	final boolean DEBUG = false;
 	final int STORAGE = 0;//ara[i][0] ponits to the storage
@@ -96,6 +95,14 @@ public class board implements Cloneable,MinimaxProblem{
 		return result;
 	}
 
+	public int probableBonusMoves(int player_idx){
+		int cnt=0;
+		for(int i=1 ; i<=bins ; i++){
+			if(araa[player_idx][i]==i)cnt++;
+		}
+		return cnt;
+	}
+
 	private void stealBin(int player_idx , int bin ) {
 		int oppositeBin = bins + 1 - bin;
 		int oppositePlayer = other_player(player_idx);
@@ -120,13 +127,10 @@ public class board implements Cloneable,MinimaxProblem{
 	}
 
 	int move() {
-		
 		int bin = getFirstNonEmptyBin( currentPlayer);
 		if (get_total_stones_of(opponent_player()) != 0) { 
-			// Invokes strategy of current player to make move. Returns the bin selected.
 			this.setMaxPlayer( currentPlayer );
 			bin = heuristics[currentPlayer].selectMove( this , depth );
-//		if (bin <= 0) return -1;
 		}
 		
 		move( bin );
@@ -134,17 +138,11 @@ public class board implements Cloneable,MinimaxProblem{
 	}
 	
 	
-	void move( int bin ) {
-		// Bin should be a bin index for current player that holds one or more stones.
-		// Performs the basic MancalaBoard move: removes stones from bin
-		// and places around board. IF last stone is placed in empty
-		// bin one player's side, that stone and opposing stones are
-		// placed in player's mancala. If last stone goes in player's
-		// MancalaBoard, current player stays the same and so goes again.
-		// Otherwise, current player becomes other player.
+	void move(int bin){		
 		int stones = ara[currentPlayer][bin];
 		if (stones == 0) {
 			System.err.println( "Error" );
+			stonesMoved = stones;
 			return;
 		}
 		if (get_total_stones_of(opponent_player()) == 0) {
@@ -160,12 +158,15 @@ public class board implements Cloneable,MinimaxProblem{
 					// Check for case of "stealing" stones from other side.
 					// Special cases for distributing stones to a mancala.
 					stealBin( currentPlayer , currentBin );
-				} else if (currentBin == 0) {
+				}else if (currentBin == 0) {
 					if (currentSide == currentPlayer) {
 						// If it's our mancala, place a stone.
 						ara[currentSide][currentBin]++;
 						if (s == 1) {
 							// We're placing our last stone in our own MancalaBoard.
+							// so currentplayer will get a bonus turn and thus we return
+							// if not returned from here , opponentplayer will be set as 
+							// currentplayer after this loop ends. 
 							if (!can_current_player_move()) {
 								flushStones( other_player(currentPlayer ) );
 							}
@@ -175,7 +176,7 @@ public class board implements Cloneable,MinimaxProblem{
 						// If it's other mancala, don't place a stone.
 						s++; // Counteract subtract of for loop. Yuck!
 					}
-					// In any case, switch to other side.
+					//In any case, switch to other side.
 					currentSide = other_player( currentSide );
 					currentBin = bins;
 				} else {
@@ -184,7 +185,6 @@ public class board implements Cloneable,MinimaxProblem{
 					currentBin--;
 				}
 			}
-//			currentPlayer = otherPlayer( currentPlayer );
 			setCurrentPlayer(opponent_player());
 			if (!can_current_player_move()){
 				flushStones(other_player(currentPlayer));
@@ -200,15 +200,13 @@ public class board implements Cloneable,MinimaxProblem{
 		for (int r = 0; r < this.ara.length; r++)
 			if (this.ara[r].length >= 0)
 				System.arraycopy( this.ara[r] , 0 , clone.ara[r] , 0 , this.ara[r].length );
-//		clone.heuristics = this.heuristics.clone();
 		return clone;
 	}
-
 	
 
     @Override
 	public double heuristicValue() {
-		return heuristics[maxPlayer].getHeuristicValue( this );
+		return heuristics[maxPlayer].getHeuristicValue(this);
 	}
 	
 	public board getSuccessor( int bin ) throws CloneNotSupportedException {
@@ -218,8 +216,8 @@ public class board implements Cloneable,MinimaxProblem{
 	}
 	
 	@Override
-	public ArrayList< MinimaxProblem > successors() {
-		ArrayList< MinimaxProblem > suclist = new ArrayList<>();
+	public ArrayList< GameTreeNode > successors() {
+		ArrayList< GameTreeNode > suclist = new ArrayList<>();
 		for (int i = 1; i <= bins; ++i) {
 			try {
 				if(ara[currentPlayer][i] > 0)
@@ -244,7 +242,7 @@ public class board implements Cloneable,MinimaxProblem{
 	}
 	
 	@Override
-	public boolean equals( MinimaxProblem o ) {
+	public boolean equals( GameTreeNode o ) {
 		if (this == o) return true;
 		if (o == null) return false;
 		board mancalaBoard = (board) o;
@@ -255,73 +253,14 @@ public class board implements Cloneable,MinimaxProblem{
 				       Arrays.deepEquals( ara , mancalaBoard.ara );
 	}
 
-
-
 	public String toString(){
-		// Return a string-based representation of this game.
-		return edgeLine() + player0Line() + middleLine() + player1Line() + edgeLine()
-				       + (DEBUG ? (countTotalStones() + " stones.\n") : "")
-				;
+		ConsolePrint cp = new ConsolePrint(this.ara);
+		
+		return cp.edgeLine()+
+			   cp.player0Line()+
+			   cp.middleLine()+
+			   cp.player1Line()+
+			   cp.edgeLine();
 	}
 	
-	public String edgeLine() {
-		return "+----" + middleDashes() + "----+\n";
-	}
-	
-	public String player0Line() {
-		StringBuilder sb = new StringBuilder();
-		sb.append( "|    |" );
-		for (int i = 1; i <= bins; i++) {
-			sb.append( " " ).append( numberString( get_bin( 0 , i ) ) ).append( " |" );
-		}
-		sb.append( "    |\n" );
-		return sb.toString();
-	}
-	
-	public String middleLine() {
-		return "| " + numberString( get_bin( 0 , 0 ) ) + " "
-				       + middleDashes()
-				       + " " + numberString( get_bin( 1 , 0 ) ) + " |\n";
-	}
-	
-	public String player1Line() {
-		StringBuilder sb = new StringBuilder();
-		sb.append( "|    |" );
-		for (int i = bins; i > 0; i--) {
-			sb.append( " " ).append( numberString( get_bin( 1 , i ) ) ).append( " |" );
-		}
-		sb.append( "    |\n" );
-		return sb.toString();
-	}
-	
-	public String middleDashes() {
-		StringBuilder sb = new StringBuilder();
-		for (int i = 1; i <= bins; i++) {
-			sb.append( "+----" );
-		}
-		sb.append( "+" );
-		return sb.toString();
-	}
-	
-	public String numberString( int n ) {
-		// Return a two character string with an integer.
-		// Assumes input is in range [0..99].
-		if ((0 <= n) && (n < 10)) {
-			return " " + n;
-		} else {
-			return Integer.toString( n );
-		}
-	}
-	
-	public static void printBoardConfiguration(){
-		board bd = new board(null , null , 0 );
-		for (int p = 0; p <=1 ; p++) {
-			for (int bin = 0; bin <= 6; ++bin){
-				bd.ara[p][bin] = bin;
-			}
-		}
-		System.out.println( "Board index Configuration: " );
-		System.out.println( " ----- Player 0 ----- " );
-		System.out.println( bd + " ----- Player 1 ----- " + "\n\n" );
-	}
 }

@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
 
 public class board implements Cloneable,GameTreeNode{
 
@@ -15,6 +16,8 @@ public class board implements Cloneable,GameTreeNode{
     final int bins = 6;//// Bin 0 is the mancala; other bins are numbered 1 through max number.
     final int stones_per_bin = 4;
 	int totalStones;
+	int stole_amount0 = 0;
+	int stole_amount1 = 0;
     
 	
     public board(Heuristic h0 , Heuristic h1 , int depth){
@@ -98,7 +101,7 @@ public class board implements Cloneable,GameTreeNode{
 	public int probableBonusMoves(int player_idx){
 		int cnt=0;
 		for(int i=1 ; i<=bins ; i++){
-			if(araa[player_idx][i]==i)cnt++;
+			if(ara[player_idx][i]==i)cnt++;
 		}
 		return cnt;
 	}
@@ -117,7 +120,62 @@ public class board implements Cloneable,GameTreeNode{
 			ara[player_idx][i] = 0;
 		}
 	}
-	
+
+	public int is_steal_move(int player_idx , int bin){
+		int stones = ara[player_idx][bin];
+		if(stones==0)return -1;
+		int curr_bin = bin - 1;
+		int curr_side = player_idx;
+		for(int s=stones ; s>0 ; s--){
+			if ((s == 1) && (curr_side == currentPlayer) && (curr_bin > 0)
+						    && (ara[curr_side][curr_bin] == 0)){
+						return curr_bin;
+			}
+			
+			if(curr_bin==0){
+				curr_side = other_player(curr_side);
+				curr_bin = bins;
+				continue;
+			}
+			curr_bin--;
+		}
+		return -1;
+	}
+
+	public int get_max_steal_amount(int player_idx){
+		int mx = 0;
+		for(int i=1;i<=bins;i++){
+			//chk if move from this bin is a steal move
+			if(is_steal_move(player_idx, i)>0){
+				int oppositeBin = bins + 1 - is_steal_move(player_idx, i);
+				int oppositePlayer = other_player(player_idx);
+				mx = Math.max(mx , ara[oppositePlayer][oppositeBin]);
+			}
+		}
+		return mx;
+	}
+
+	public int get_weighted_stones_sum(int player_idx){
+		int sum = 0 , wt;
+		//giving larger weights to bins close to the storage
+		if(player_idx == 0){
+			for(int i=1 ; i<=bins ; i++){
+				int tmp = (int)Math.pow(2 , 7-i);
+				wt = new Random().nextInt(tmp) + 1;//wt=i;
+				sum += wt*ara[player_idx][i];
+			}
+		}
+		else{
+			for(int i=1 ; i<=bins ; i++){
+				int tmp = (int)Math.pow(2 , 7-i);
+				wt = new Random().nextInt(tmp) + 1;//wt=i;
+				sum += wt*ara[player_idx][i];
+			}
+		}
+		return sum;
+		
+	}
+
 	private void setCurrentPlayer(int currentPlayer){
 		this.currentPlayer = currentPlayer;
 	}
@@ -168,7 +226,7 @@ public class board implements Cloneable,GameTreeNode{
 							// if not returned from here , opponentplayer will be set as 
 							// currentplayer after this loop ends. 
 							if (!can_current_player_move()) {
-								flushStones( other_player(currentPlayer ) );
+								flushStones(other_player(currentPlayer ) );
 							}
 							return;
 						}
@@ -205,7 +263,7 @@ public class board implements Cloneable,GameTreeNode{
 	
 
     @Override
-	public double heuristicValue() {
+	public double heuristicValue(){
 		return heuristics[maxPlayer].getHeuristicValue(this);
 	}
 	
@@ -261,6 +319,15 @@ public class board implements Cloneable,GameTreeNode{
 			   cp.middleLine()+
 			   cp.player1Line()+
 			   cp.edgeLine();
+			  /* +"bin "+1+" "+is_steal_move(currentPlayer, 1)+"\n"
+			   +"bin "+2+" "+is_steal_move(currentPlayer, 2)+"\n"
+			   +"bin "+3+" "+is_steal_move(currentPlayer, 3)+"\n"
+			   +"bin "+4+" "+is_steal_move(currentPlayer, 4)+"\n"
+			   +"bin "+5+" "+is_steal_move(currentPlayer, 5)+"\n"
+			   +"bin "+6+" "+is_steal_move(currentPlayer, 6)+"\n"
+			   +currentPlayer+"'s max steal amount "
+			   +get_max_steal_amount(currentPlayer);
+			   */
 	}
 	
 }

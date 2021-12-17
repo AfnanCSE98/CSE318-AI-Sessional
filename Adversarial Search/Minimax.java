@@ -6,7 +6,7 @@ public class Minimax {
 	
 	
 	//returns the optimal next bin idx
-	public static int minimax( GameTreeNode root , int depth ) {
+	public static int minimax(GameTreeNode root , int depth) {
 		OptimalNode opt = alphabeta( root , -INF , INF , true , depth );
 		ArrayList< GameTreeNode > list = root.successors();
 		int sz = list.size();

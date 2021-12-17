@@ -8,7 +8,11 @@ public class main{
 	public static final boolean DEBUG = false;
 	public static final int MAX_DEPTH = 15;
 	private static final int nMaxStages = 150;
-	
+	private static boolean generate_report=true;
+	private static final int[] h_list0 = { 1 , 2 , 3 ,4,5,6};
+	private static final int[] h_list1 = { 1 , 2 , 3 ,4,5,6};
+	private static final int NO_GAMES_PER_HEURISTIC = 10;
+
 	private static Heuristic selectStrategy(int n){
 		return Heuristic.intToStrategy(n);
 	}
@@ -99,7 +103,72 @@ public class main{
 		}
 	}
 
+	public static void stat()throws IOException {
+		PrintWriter logFile = new PrintWriter( new FileWriter( "log.log" ) );
+		int no_of_heuristics = h_list0.length;
+		ReportObject [][]data = new ReportObject[no_of_heuristics+1][no_of_heuristics+1];
+		for(int i=1 ; i<=no_of_heuristics ; i++){
+			for(int j=1 ; j<=no_of_heuristics ; j++){
+				data[i][j] = new ReportObject();
+			}
+		}
+
+		int h0, h1;
+		for (int i : h_list0){
+			for (int j : h_list1){
+					if(i==j)continue;
+				
+					h0 = i;
+					h1 = j;
+					int n0 = 0, n1 = 0, tie = 0;
+					for (int game = 0; game <NO_GAMES_PER_HEURISTIC ; ++game) {
+						int depth = game + 1 + 5;
+						int r = play(selectStrategy( h0 ) , selectStrategy( h1 ) , depth );
+						if (r == 0) n0++;
+						if (r == 1) n1++;
+						if (r == -1) tie++;
+					}
+					logFile.println("\n\nHeuristic "+h0+" vs "+h1+"\nFirst Move : "+h0);
+					logFile.println( "Heuristic " + h0 + " won : " + n0 + "\nHeuristic " + h1 + " won : " + n1 + "\nDraw : " + tie );
+
+					data[i][j].winPercentage_firstMove = ((double)n0/NO_GAMES_PER_HEURISTIC)*100.0;
+					data[j][i].winPercentage_secondMove = ((double)n1/NO_GAMES_PER_HEURISTIC)*100.0;   
+					logFile.flush();		
+			}
+		}
+		//print table in logfile
+		PrintWriter out=null;
+		try {
+			out = new PrintWriter("out.csv");
+		} catch (Exception e) {
+			//TODO: handle exception
+		}
+		StringBuilder sb = new StringBuilder();
+		sb.append(" ,h1,h2,h3,h4,h5,h6\n");
+		for(int i=1 ; i<=no_of_heuristics ; i++){
+			sb.append("h"+i+",");
+			for(int j=1 ; j<=no_of_heuristics ; j++){
+				if(i==j)sb.append("-");
+				else{
+					sb.append("win%1st "+data[i][j].winPercentage_firstMove
+							+" win%2nd "+data[i][j].winPercentage_secondMove);
+				} 
+				if(j==no_of_heuristics)sb.append(",\n");
+				else sb.append(",");
+			}
+			sb.append("\n");
+		}
+		//System.out.println(sb.toString());
+		out.write(sb.toString());
+		out.close();
+	}
+
     public static void main(String[] args ) throws IOException {
+		//generate report
+		if(generate_report){
+			stat();
+			return;
+		}
 		int h[] = { 0 , 0 };
 		Scanner scanner = new Scanner( System.in );
 		System.out.println("AI vs AI(1)\nor\nHuman vs AI(2)\n");
@@ -124,4 +193,11 @@ public class main{
 		}
 	}
 
+}
+
+class ReportObject{
+	double winPercentage_firstMove;
+	double winPercentage_secondMove;
+
+	ReportObject(){}
 }

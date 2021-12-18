@@ -160,15 +160,15 @@ public class board implements Cloneable,GameTreeNode{
 		//giving larger weights to bins close to the storage
 		if(player_idx == 0){
 			for(int i=1 ; i<=bins ; i++){
-				int tmp = (int)Math.pow(2 , 7-i);
-				wt = new Random().nextInt(tmp) + 1;//wt=i;
+				//int tmp = (int)Math.pow(2 , 7-i);
+				wt=i;
 				sum += wt*ara[player_idx][i];
 			}
 		}
 		else{
 			for(int i=1 ; i<=bins ; i++){
-				int tmp = (int)Math.pow(2 , 7-i);
-				wt = new Random().nextInt(tmp) + 1;//wt=i;
+				
+				wt=i;
 				sum += wt*ara[player_idx][i];
 			}
 		}

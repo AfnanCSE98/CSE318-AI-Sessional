@@ -18,5 +18,6 @@ public class OptimalNode {
 			else if(opt1 != null && opt1.heuristic_value <= opt2.heuristic_value) return opt1;
 			else return opt2;
 		}
+
 	}
 	

@@ -3,14 +3,13 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class main{
-
 	private static boolean human_vs_AI=false;
 	public static final boolean DEBUG = false;
 	public static final int MAX_DEPTH = 15;
 	private static final int nMaxStages = 150;
-	private static boolean generate_report=true;
-	private static final int[] h_list0 = { 1 , 2 , 3 ,4,5,6};
-	private static final int[] h_list1 = { 1 , 2 , 3 ,4,5,6};
+	private static boolean generate_report = true;
+	private static final int[] h_list0 = { 1 , 2 };
+	private static final int[] h_list1 = { 1 , 2 };
 	private static final int NO_GAMES_PER_HEURISTIC = 10;
 
 	private static Heuristic selectStrategy(int n){
@@ -120,23 +119,29 @@ public class main{
 				
 					h0 = i;
 					h1 = j;
-					int n0 = 0, n1 = 0, tie = 0;
-					for (int game = 0; game <NO_GAMES_PER_HEURISTIC ; ++game) {
-						int depth = game + 1 + 5;
-						int r = play(selectStrategy( h0 ) , selectStrategy( h1 ) , depth );
-						if (r == 0) n0++;
-						if (r == 1) n1++;
-						if (r == -1) tie++;
+					
+					for(int d = 5; d<=15 ; d++){
+						int n0 = 0, n1 = 0, tie = 0;
+						for (int game = 0; game <NO_GAMES_PER_HEURISTIC ; ++game) {
+							int r = play(selectStrategy( h0 ) , selectStrategy( h1 ) , d );
+							if (r == 0) n0++;
+							if (r == 1) n1++;
+							if (r == -1) tie++;
+						}
+						logFile.println("Depth "+d);
+						logFile.println("\n\nHeuristic "+h0+" vs "+h1+"\nFirst Move : "+h0);
+						logFile.println( "Heuristic " + h0 + " won : " + n0 + "\nHeuristic "
+										 + h1 + " won : " + n1 + "\nDraw : " + tie +"\n");
+						logFile.flush();
 					}
-					logFile.println("\n\nHeuristic "+h0+" vs "+h1+"\nFirst Move : "+h0);
-					logFile.println( "Heuristic " + h0 + " won : " + n0 + "\nHeuristic " + h1 + " won : " + n1 + "\nDraw : " + tie );
-
-					data[i][j].winPercentage_firstMove = ((double)n0/NO_GAMES_PER_HEURISTIC)*100.0;
-					data[j][i].winPercentage_secondMove = ((double)n1/NO_GAMES_PER_HEURISTIC)*100.0;   
-					logFile.flush();		
+					
+					//data[i][j].winPercentage_firstMove = ((double)n0/NO_GAMES_PER_HEURISTIC)*100.0;
+					//data[j][i].winPercentage_secondMove = ((double)n1/NO_GAMES_PER_HEURISTIC)*100.0;   
+							
 			}
 		}
 		//print table in logfile
+		/*
 		PrintWriter out=null;
 		try {
 			out = new PrintWriter("out.csv");
@@ -161,6 +166,7 @@ public class main{
 		//System.out.println(sb.toString());
 		out.write(sb.toString());
 		out.close();
+		*/
 	}
 
     public static void main(String[] args ) throws IOException {

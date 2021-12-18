@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Random;
 
 public class Minimax {
 
@@ -23,29 +24,45 @@ public class Minimax {
 			double h_val = state.heuristicValue();
 			return new OptimalNode(state , h_val);
 		}
-		if (isMaximizing) {
+		if (isMaximizing){
+			ArrayList<OptimalNode>ls = new ArrayList<OptimalNode>();
 			OptimalNode maxNode = new OptimalNode( null , -INF );
 			for (GameTreeNode s : state.successors()){
 				if (s == null) continue;
 				OptimalNode tmp_node = new OptimalNode(s , alphabeta(s , alpha , beta , s.isMaximizing() , maxdepth - 1 ).heuristic_value );
 				maxNode = OptimalNode.max(maxNode , tmp_node);
+				ls.add(maxNode);
 				alpha = Math.max( alpha , maxNode.heuristic_value );
 				if (alpha >= beta) break; //pruning
 			}
-			return maxNode;
+			ArrayList<OptimalNode>best = new ArrayList<OptimalNode>();
+			for(int i=0 ; i<ls.size(); i++){
+				if(ls.get(i).heuristic_value == maxNode.heuristic_value){
+					best.add(ls.get(i));
+				}
+			}
+			return best.get(new Random().nextInt(best.size()));
+
 			
 		}
 		else{
 			OptimalNode minNode = new OptimalNode( null , INF );
-			
+			ArrayList<OptimalNode>ls = new ArrayList<OptimalNode>();
 			for (GameTreeNode s : state.successors()) {
 				if (s == null) continue;
 				OptimalNode tmp_node = new OptimalNode( s , alphabeta( s , alpha , beta , s.isMaximizing() , maxdepth - 1 ).heuristic_value);
 				minNode = OptimalNode.min(minNode , tmp_node);
+				ls.add(minNode);
 				beta = Math.min( beta , minNode.heuristic_value);
 				if (alpha >= beta) break; //pruning
 			}
-			return minNode;
+			ArrayList<OptimalNode>best = new ArrayList<OptimalNode>();
+			for(int i=0 ; i<ls.size(); i++){
+				if(ls.get(i).heuristic_value == minNode.heuristic_value){
+					best.add(ls.get(i));
+				}
+			}
+			return best.get(new Random().nextInt(best.size()));
 		}
 	}
 	

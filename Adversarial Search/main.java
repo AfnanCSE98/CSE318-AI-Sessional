@@ -7,7 +7,7 @@ public class main{
 	public static final boolean DEBUG = false;
 	public static final int MAX_DEPTH = 15;
 	private static final int nMaxStages = 150;
-	private static boolean generate_report = true;
+	private static boolean generate_report = false;
 	private static final int[] h_list0 = { 1 , 2 };
 	private static final int[] h_list1 = { 1 , 2 };
 	private static final int NO_GAMES_PER_HEURISTIC = 10;
@@ -56,12 +56,22 @@ public class main{
 		
         System.out.println(bd);
 		int round = 0;
-		boolean turnAI = true;
 		int bin;
-		int currentPlayer = 0;
+		int currentPlayer;
+		boolean turnAI;
 		Scanner sc = new Scanner(System.in);
-
-		while (!bd.is_game_over() && round < nMaxStages){
+		System.out.println("First Move by AI(1) or by you(2)?");
+		int ch = sc.nextInt();
+		if(ch==1){
+			turnAI = true;
+			currentPlayer = 0;
+			bd.currentPlayer = 0;
+		}else{
+			turnAI = false;
+			currentPlayer = 1;
+			bd.currentPlayer = 1;
+		}
+		while(!bd.is_game_over() && round < nMaxStages){
 			System.out.println("------------" + round + "--------------");
 			currentPlayer = bd.currentPlayer;
 			if(currentPlayer == 0)System.out.println("AI\'s move\n");
@@ -69,13 +79,13 @@ public class main{
 			
 			if(turnAI && currentPlayer==0){
 				bin = bd.move();
-				if(currentPlayer == 1)turnAI = false;
+				if(bd.currentPlayer == 1)turnAI = false;
 			}
 			else {
 				System.out.println("Select bin[1/2/3/4/5/6](right to left)\n");
 				bin = sc.nextInt();
 				bd.move(bin);
-				if(currentPlayer == 0)turnAI = true;
+				if(bd.currentPlayer == 0)turnAI = true;
 			}
 			
 			if (bin <= 0) break;
@@ -103,7 +113,7 @@ public class main{
 	}
 
 	public static void stat()throws IOException {
-		PrintWriter logFile = new PrintWriter( new FileWriter( "log.log" ) );
+		PrintWriter logFile = new PrintWriter(new FileWriter( "log.log" ) );
 		int no_of_heuristics = h_list0.length;
 		ReportObject [][]data = new ReportObject[no_of_heuristics+1][no_of_heuristics+1];
 		for(int i=1 ; i<=no_of_heuristics ; i++){
@@ -182,16 +192,15 @@ public class main{
 		if (choice==2){
 			//human vs AI
 			human_vs_AI = true;
-			System.out.println("Choose heuristic[1/2/3] for AI(player 0)");
+			System.out.println("Choose heuristic[1/2/3/4/5/6] for AI(player 0)");
 			int h_id = scanner.nextInt();
 			Heuristic s0 = new Heuristic(h_id);
 			play_human(s0, 10);
 		} 
-		else{
-			
-            System.out.println("Choose heuristic[1/2/3] for player 0");
+		else{	
+            System.out.println("Choose heuristic[1/2/3/4/5/6] for player 0");
             h[0] = scanner.nextInt();
-            System.out.println("Choose heuristic[1/2/3] for player 1");
+            System.out.println("Choose heuristic[1/2/3/4/5/6] for player 1");
             h[1] = scanner.nextInt();
 			System.out.println("Choose depth");
             int depth = scanner.nextInt();

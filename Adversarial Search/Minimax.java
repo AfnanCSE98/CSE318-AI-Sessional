@@ -12,8 +12,8 @@ public class Minimax {
 		ArrayList< GameTreeNode > list = root.successors();
 		int sz = list.size();
 		for (int i=0 ; i<sz ; i++){
-			if(list.get( i ) == null)continue;
-			if(list.get( i ).equals( opt.node))return i;
+			if(list.get(i) == null)continue;
+			if(list.get(i).equals(opt.node))return i;
 		}
 		return -1;
 	}
@@ -25,7 +25,7 @@ public class Minimax {
 			return new OptimalNode(state , h_val);
 		}
 		if (isMaximizing){
-			ArrayList<OptimalNode>ls = new ArrayList<OptimalNode>();
+			ArrayList<OptimalNode>ls = new ArrayList<OptimalNode>();//to store all maxNodes
 			OptimalNode maxNode = new OptimalNode( null , -INF );
 			for (GameTreeNode s : state.successors()){
 				if (s == null) continue;
@@ -35,13 +35,13 @@ public class Minimax {
 				alpha = Math.max( alpha , maxNode.heuristic_value );
 				if (alpha >= beta) break; //pruning
 			}
-			ArrayList<OptimalNode>best = new ArrayList<OptimalNode>();
+			ArrayList<OptimalNode>best = new ArrayList<OptimalNode>();//to store best nodes if multiple
 			for(int i=0 ; i<ls.size(); i++){
 				if(ls.get(i).heuristic_value == maxNode.heuristic_value){
 					best.add(ls.get(i));
 				}
 			}
-			return best.get(new Random().nextInt(best.size()));
+			return best.get(new Random().nextInt(best.size()));//choose a best node randomly
 
 			
 		}

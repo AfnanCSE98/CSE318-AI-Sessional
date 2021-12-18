@@ -6,10 +6,10 @@ public class board implements Cloneable,GameTreeNode{
 
     int[][] ara;
 	
-	int currentPlayer; // Player whose move is next.
+	int currentPlayer;
 	int maxPlayer;
-	Heuristic[] heuristics; // An array with two elements = the two players' heuristics.
-	int stonesMoved = 0; // Stones moved on last move.
+	Heuristic[] heuristics;
+	int stonesMoved = 0;
 	int depth;
 	final boolean DEBUG = false;
 	final int STORAGE = 0;//ara[i][0] ponits to the storage
@@ -80,6 +80,14 @@ public class board implements Cloneable,GameTreeNode{
 		return false;
 	}
 
+	public int probableBonusMoves(int player_idx){
+		int cnt=0;
+		for(int i=1 ; i<=bins ; i++){
+			if(ara[player_idx][i]==i)cnt++;
+		}
+		return cnt;
+	}
+
     public boolean no_stones_in_both_sides(){
         return get_total_stones_of(currentPlayer)==0 && get_total_stones_of(opponent_player())==0;
     }
@@ -98,22 +106,14 @@ public class board implements Cloneable,GameTreeNode{
 		return result;
 	}
 
-	public int probableBonusMoves(int player_idx){
-		int cnt=0;
-		for(int i=1 ; i<=bins ; i++){
-			if(ara[player_idx][i]==i)cnt++;
-		}
-		return cnt;
-	}
-
-	private void stealBin(int player_idx , int bin ) {
+	private void captureBin(int player_idx , int bin ) {
 		int oppositeBin = bins + 1 - bin;
 		int oppositePlayer = other_player(player_idx);
 		ara[player_idx][STORAGE] += (ara[oppositePlayer][oppositeBin] + 1);
 		ara[oppositePlayer][oppositeBin] = 0;
 	}
 	
-	private void flushStones( int player_idx){
+	private void moveToMancala( int player_idx){
 		for (int i = 1; i <= bins; i++){
 			stonesMoved = ara[player_idx][i];
 			ara[player_idx][STORAGE] += ara[player_idx][i];
@@ -157,20 +157,10 @@ public class board implements Cloneable,GameTreeNode{
 
 	public int get_weighted_stones_sum(int player_idx){
 		int sum = 0 , wt;
-		//giving larger weights to bins close to the storage
-		if(player_idx == 0){
-			for(int i=1 ; i<=bins ; i++){
-				//int tmp = (int)Math.pow(2 , 7-i);
-				wt=i;
-				sum += wt*ara[player_idx][i];
-			}
-		}
-		else{
-			for(int i=1 ; i<=bins ; i++){
-				
-				wt=i;
-				sum += wt*ara[player_idx][i];
-			}
+		//giving larger weights to bins close to the storage		
+		for(int i=1 ; i<=bins ; i++){	
+			wt=i;
+			sum += wt*ara[player_idx][i];
 		}
 		return sum;
 		
@@ -204,18 +194,16 @@ public class board implements Cloneable,GameTreeNode{
 			return;
 		}
 		if (get_total_stones_of(opponent_player()) == 0) {
-			flushStones( currentPlayer );
+			moveToMancala( currentPlayer );
 		} else {
 			stonesMoved = stones;
 			ara[currentPlayer][bin] = 0;
 			int currentSide = currentPlayer;
-			int currentBin = bin - 1; // Start distributing stones in well to right of selected bin.
+			int currentBin = bin - 1; 
 			for (int s = stones; s > 0; s--){
-				if ((s == 1) && (currentSide == currentPlayer) && (currentBin > 0)
-						    && (ara[currentSide][currentBin] == 0)) {
-					// Check for case of "stealing" stones from other side.
-					// Special cases for distributing stones to a mancala.
-					stealBin( currentPlayer , currentBin );
+				//capturing options
+				if ((s == 1) && (currentSide == currentPlayer) && (currentBin > 0) && (ara[currentSide][currentBin] == 0)) {
+					captureBin( currentPlayer , currentBin );
 				}else if (currentBin == 0) {
 					if (currentSide == currentPlayer) {
 						// If it's our mancala, place a stone.
@@ -226,13 +214,13 @@ public class board implements Cloneable,GameTreeNode{
 							// if not returned from here , opponentplayer will be set as 
 							// currentplayer after this loop ends. 
 							if (!can_current_player_move()) {
-								flushStones(other_player(currentPlayer ) );
+								moveToMancala(other_player(currentPlayer ) );
 							}
 							return;
 						}
 					} else {
 						// If it's other mancala, don't place a stone.
-						s++; // Counteract subtract of for loop. Yuck!
+						s++;
 					}
 					//In any case, switch to other side.
 					currentSide = other_player( currentSide );
@@ -245,7 +233,7 @@ public class board implements Cloneable,GameTreeNode{
 			}
 			setCurrentPlayer(opponent_player());
 			if (!can_current_player_move()){
-				flushStones(other_player(currentPlayer));
+				moveToMancala(other_player(currentPlayer));
 			}
 		}
 	}
@@ -255,22 +243,23 @@ public class board implements Cloneable,GameTreeNode{
 	protected Object clone() throws CloneNotSupportedException {
 		board clone = (board) super.clone();
 		clone.ara = new int[this.ara.length][this.ara[0].length];
-		for (int r = 0; r < this.ara.length; r++)
-			if (this.ara[r].length >= 0)
+		for (int r = 0; r < this.ara.length; r++){
+			if (this.ara[r].length >= 0){
 				System.arraycopy( this.ara[r] , 0 , clone.ara[r] , 0 , this.ara[r].length );
+			}
+		}
 		return clone;
 	}
 	
-
     @Override
 	public double heuristicValue(){
 		return heuristics[maxPlayer].getHeuristicValue(this);
 	}
 	
 	public board getSuccessor( int bin ) throws CloneNotSupportedException {
-		board suc = (board) this.clone();
-		suc.move( bin );
-		return suc;
+		board bd = (board) this.clone();
+		bd.move( bin );
+		return bd;
 	}
 	
 	@Override
@@ -313,21 +302,11 @@ public class board implements Cloneable,GameTreeNode{
 
 	public String toString(){
 		ConsolePrint cp = new ConsolePrint(this.ara);
-		
 		return cp.edgeLine()+
 			   cp.player0Line()+
 			   cp.middleLine()+
 			   cp.player1Line()+
 			   cp.edgeLine();
-			  /* +"bin "+1+" "+is_steal_move(currentPlayer, 1)+"\n"
-			   +"bin "+2+" "+is_steal_move(currentPlayer, 2)+"\n"
-			   +"bin "+3+" "+is_steal_move(currentPlayer, 3)+"\n"
-			   +"bin "+4+" "+is_steal_move(currentPlayer, 4)+"\n"
-			   +"bin "+5+" "+is_steal_move(currentPlayer, 5)+"\n"
-			   +"bin "+6+" "+is_steal_move(currentPlayer, 6)+"\n"
-			   +currentPlayer+"'s max steal amount "
-			   +get_max_steal_amount(currentPlayer);
-			   */
 	}
 	
 }

@@ -6,14 +6,13 @@ public class main{
 	private static boolean human_vs_AI=false;
 	public static final boolean DEBUG = false;
 	public static final int MAX_DEPTH = 15;
-	private static final int nMaxStages = 150;
 	private static boolean generate_report = false;
-	private static final int[] h_list0 = { 1 , 2 };
-	private static final int[] h_list1 = { 1 , 2 };
+	private static final int[] h_list0 = { 1 , 2 ,3 ,4 , 5 , 6};
+	private static final int[] h_list1 = { 1 , 2 ,3 ,4 , 5 , 6};
 	private static final int NO_GAMES_PER_HEURISTIC = 10;
 
 	private static Heuristic selectStrategy(int n){
-		return Heuristic.intToStrategy(n);
+		return Heuristic.h_idToStrategy(n);
 	}
 	
 	
@@ -22,23 +21,22 @@ public class main{
 		
         System.out.println(bd);
 		int round = 0;
-		while (!bd.is_game_over() && round < nMaxStages){
-			System.out.println("------------" + round + "--------------");
+		while (!bd.is_game_over()){
+			System.out.println("              Round " + round );
 			int currentPlayer = bd.currentPlayer;
 			System.out.println("Player " + currentPlayer + "\'s move.");
 			int bin = bd.move();
 			if (bin <= 0) break;
 			System.out.println("Player " + currentPlayer + " selects "
-					                                      + bd.stonesMoved + " stones from bin " + bin );
+		                         + bd.stonesMoved + " stones from bin " + bin );
 			System.out.println(bd);
-			System.out.println("\n--------------------------\n" );
 			round++;
 		}
 		System.out.println( "Final board configuration:\n" );
 
 		System.out.println( bd );
 		if (bd.get_bin( 0 , 0 ) == bd.get_bin( 1 , 0 )) {
-			System.out.println( "The game ends in a tie!" );
+			System.out.println( "It's a tie!");
 			return -1;
 		} else if (bd.get_bin( 0 , 0 ) > bd.get_bin( 1 , 0 )) {
 			System.out.println( "Player0 wins!" );
@@ -71,8 +69,8 @@ public class main{
 			currentPlayer = 1;
 			bd.currentPlayer = 1;
 		}
-		while(!bd.is_game_over() && round < nMaxStages){
-			System.out.println("------------" + round + "--------------");
+		while(!bd.is_game_over()){
+			System.out.println("              Round " + round );
 			currentPlayer = bd.currentPlayer;
 			if(currentPlayer == 0)System.out.println("AI\'s move\n");
 			else System.out.println("Player " + currentPlayer + "\'s move.");
@@ -93,14 +91,13 @@ public class main{
 			else System.out.println("Player " + currentPlayer + " selects " + bd.stonesMoved + " stones from bin " + bin );
 			
 			System.out.println(bd);
-			System.out.println("\n--------------------------\n" );
 			round++;
 		}
 		System.out.println( "Final board configuration:\n" );
 
 		System.out.println( bd );
 		if (bd.get_bin( 0 , 0 ) == bd.get_bin( 1 , 0 )) {
-			System.out.println( "The game ends in a tie!" );
+			System.out.println( "It's a tie!" );
 			return -1;
 		} else if (bd.get_bin( 0 , 0 ) > bd.get_bin( 1 , 0 )) {
 			if(human_vs_AI)System.out.println( "AI wins!" );
@@ -113,7 +110,7 @@ public class main{
 	}
 
 	public static void stat()throws IOException {
-		PrintWriter logFile = new PrintWriter(new FileWriter( "log.log" ) );
+		PrintWriter logFile = new PrintWriter(new FileWriter("log.log") );
 		int no_of_heuristics = h_list0.length;
 		ReportObject [][]data = new ReportObject[no_of_heuristics+1][no_of_heuristics+1];
 		for(int i=1 ; i<=no_of_heuristics ; i++){
@@ -123,60 +120,60 @@ public class main{
 		}
 
 		int h0, h1;
-		for (int i : h_list0){
-			for (int j : h_list1){
+		for(int d=5 ; d<=13 ; d++){
+			logFile.println("Depth "+d);
+			for (int i : h_list0){
+				for (int j : h_list1){
 					if(i==j)continue;
 				
 					h0 = i;
 					h1 = j;
 					
-					for(int d = 5; d<=15 ; d++){
-						int n0 = 0, n1 = 0, tie = 0;
-						for (int game = 0; game <NO_GAMES_PER_HEURISTIC ; ++game) {
-							int r = play(selectStrategy( h0 ) , selectStrategy( h1 ) , d );
-							if (r == 0) n0++;
-							if (r == 1) n1++;
-							if (r == -1) tie++;
-						}
-						logFile.println("Depth "+d);
-						logFile.println("\n\nHeuristic "+h0+" vs "+h1+"\nFirst Move : "+h0);
-						logFile.println( "Heuristic " + h0 + " won : " + n0 + "\nHeuristic "
-										 + h1 + " won : " + n1 + "\nDraw : " + tie +"\n");
-						logFile.flush();
+					int n0 = 0, n1 = 0, tie = 0;
+					//i first move,j 2nd move
+					for (int game = 0; game <NO_GAMES_PER_HEURISTIC ; ++game) {
+						int r = play(selectStrategy( h0 ) , selectStrategy( h1 ) , d );
+						if (r == 0) n0++;
+						if (r == 1) n1++;
+						if (r == -1) tie++;
 					}
 					
-					//data[i][j].winPercentage_firstMove = ((double)n0/NO_GAMES_PER_HEURISTIC)*100.0;
-					//data[j][i].winPercentage_secondMove = ((double)n1/NO_GAMES_PER_HEURISTIC)*100.0;   
-							
+					logFile.println("\n\nHeuristic "+h0+" vs "+h1+"\nFirst Move : "+h0);
+					logFile.println( "Heuristic " + h0 + " won : " + n0 + "\nHeuristic "
+									+ h1 + " won : " + n1 + "\nDraw : " + tie +"\n");
+					logFile.flush();
+					data[i][j].winPercentage_firstMove = ((double)n0/NO_GAMES_PER_HEURISTIC)*100.0;
+					data[j][i].winPercentage_secondMove = ((double)n1/NO_GAMES_PER_HEURISTIC)*100.0;   										
+				}
 			}
-		}
-		//print table in logfile
-		/*
-		PrintWriter out=null;
-		try {
-			out = new PrintWriter("out.csv");
-		} catch (Exception e) {
-			//TODO: handle exception
-		}
-		StringBuilder sb = new StringBuilder();
-		sb.append(" ,h1,h2,h3,h4,h5,h6\n");
-		for(int i=1 ; i<=no_of_heuristics ; i++){
-			sb.append("h"+i+",");
-			for(int j=1 ; j<=no_of_heuristics ; j++){
-				if(i==j)sb.append("-");
-				else{
-					sb.append("win%1st "+data[i][j].winPercentage_firstMove
-							+" win%2nd "+data[i][j].winPercentage_secondMove);
-				} 
-				if(j==no_of_heuristics)sb.append(",\n");
-				else sb.append(",");
+			PrintWriter out=null;
+			try {
+				out = new PrintWriter("depth_"+d+".csv");
+			} catch (Exception e) {
+				//TODO: handle exception
 			}
-			sb.append("\n");
+			StringBuilder sb = new StringBuilder();
+			sb.append(" ,h1,h2,h3,h4,h5,h6\n");
+			//sb.append(" ,h1,h2\n");
+			for(int p=1 ; p<=no_of_heuristics ; p++){
+				sb.append("h"+p+",");
+				for(int q=1 ; q<=no_of_heuristics ; q++){
+					if(p==q)sb.append("-");
+					else{
+						sb.append("win%1st "+data[p][q].winPercentage_firstMove
+								+" win%2nd "+data[p][q].winPercentage_secondMove);
+					} 
+					if(q==no_of_heuristics)sb.append(",\n");
+					else sb.append(",");
+				}
+				sb.append("\n");
+			}
+			//System.out.println(sb.toString());
+			out.write(sb.toString());
+			out.close();
+			
 		}
-		//System.out.println(sb.toString());
-		out.write(sb.toString());
-		out.close();
-		*/
+	
 	}
 
     public static void main(String[] args ) throws IOException {

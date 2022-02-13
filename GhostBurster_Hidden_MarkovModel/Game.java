@@ -3,6 +3,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.lang.Math.*;
 import java.util.Scanner;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 public class Game {
     private static int ROW;
@@ -114,11 +116,16 @@ public class Game {
                 }
             }
         }
-        //p = 0.9
+        p = 0.9;
         if(valid_side_moves!=0)cell.set_side_move_prob(p/valid_side_moves);
-        else cell.set_side_move_prob(0.0);
+        else{
+            cell.set_side_move_prob(0.0);
+            p = 0.0;
+        } 
         if(valid_non_side_move!=0)cell.set_non_side_move_prob((1-p)/(valid_non_side_move));
-        else cell.set_non_side_move_prob(0.0);
+        else{
+            cell.set_non_side_move_prob(0.0);
+        } 
     }
 
     public static double move_prob(Cell cell1 , Cell cell2){
@@ -149,14 +156,13 @@ public class Game {
         int i2 = (cell.getX() == ROW-1)?cell.getX():cell.getX()+1;
         int j1 = (cell.getY() == 0)?cell.getY():cell.getY()-1;
         int j2 = (cell.getY() == COL-1)?cell.getY():cell.getY()+1;
+        
         double sumOfProbs = 0.0;
-
         double moveProb=0.0;
 
         for(int i = i1 ; i <= i2 ; i++){
             for(int j = j1 ; j <= j2 ; j++){
                 moveProb = move_prob(board[i][j] , cell) * board[i][j].getGhostProbability();
-                //System.out.printf("(%d %d) =>>> (%d %d) prob : %f\n" , i,j,cell.getX(),cell.getY(),moveProb);
                 sumOfProbs += moveProb;
             }
         }
@@ -178,11 +184,8 @@ public class Game {
         for(int i = 0 ; i < ROW ; i++){
             for(int j = 0 ; j < COL ; j++) {
                 tempProb[i][j] = updateProbability(board[i][j]);
-                //board[i][j].setGhostProbability(tempProb[i][j]);
             }
         }
-        //printTempBoard();
-        //normalizeProbability();
         for(int i = 0 ; i < ROW ; i++){
             for(int j = 0 ; j < COL ; j++) {
                 board[i][j].setGhostProbability(tempProb[i][j]);
@@ -210,7 +213,7 @@ public class Game {
             System.out.println();
             System.out.println();
         }
-        System.out.printf("Sum = %f\n\n" , get_sum());
+        System.out.printf("Sum = %.3f\n\n" , get_sum());
     }
 
     public static void printTempBoard(){
@@ -267,6 +270,7 @@ public static void main(String[] args) throws FileNotFoundException {
 
     set_prob_side_diag_self_move();
 
+    System.out.println("Initial Probabilities\n");
     printBoard();
 
     String s;int p,q,res;
@@ -278,9 +282,7 @@ public static void main(String[] args) throws FileNotFoundException {
             q = s.charAt(4)-'0';
             res = s.charAt(6)-'0';
             updateTransition();
-            System.out.println("After time update");
-            printBoard();
-            System.out.println("After Observation update");
+            System.out.println("Updated Grid");
             updateObservation(board[p][q], res);
             printBoard();
         }
